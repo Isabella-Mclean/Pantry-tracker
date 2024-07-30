@@ -2,11 +2,13 @@
 import { Box, Stack, Typography, Button, Modal, stepLabelClasses, TextField, IconButton, Alert } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
 import {firestore} from "@/firebase";
 import { collection, doc, query,getDocs, setDoc, deleteDoc, getDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import backgroundImage from './background.jpg'
 import '@fontsource-variable/quicksand';
+import { Remove } from "@mui/icons-material";
 
 const style = {
   position: 'absolute',
@@ -69,14 +71,7 @@ export default function Home() {
   const removeItem = async (item) => { 
     const docRef = doc(collection(firestore, 'pantry'), item)
     const docSnap = await getDoc(docRef)
-    if (docSnap.exists()){
-      const {count} = docSnap.data()
-      if(count == 1){
-        await deleteDoc(docRef)
-      }else{
-        await setDoc(docRef, {count: count-1})
-      } 
-    }
+    await deleteDoc(docRef)
     await updatePantry()
   }
   const searchItem = async(item) =>{
@@ -97,6 +92,21 @@ export default function Home() {
     }
   }  
   
+  const reduceItem = async(item) =>{
+    const docRef = doc(collection(firestore, 'pantry'), item)
+    const docSnap = await getDoc(docRef)
+    if (docSnap.exists()){
+      const {count} = docSnap.data()
+      if(count == 1){
+        await deleteDoc(docRef)
+      }else{
+        await setDoc(docRef, {count: count-1})
+      } 
+    }
+    await updatePantry()
+  }
+
+
   return (
     <Box 
     width="100vw" 
@@ -139,7 +149,11 @@ export default function Home() {
             }}
             sx={{
               backgroundColor: 'rgba(193,177,160, 0.5)', 
-              color:'rgba(40,40,40, 0.9)'
+              color:'rgba(40,40,40, 0.9)',
+              '&:hover': {
+                  backgroundColor:  'rgba(89,70,48, 0.6)',
+                  color: 'white' 
+                  }
             }}>
               Add</Button>
           </Stack>
@@ -174,7 +188,11 @@ export default function Home() {
             }}
             sx={{
               backgroundColor: 'rgba(193,177,160, 0.5)',
-              color:'rgba(40,40,40, 0.9)'
+              color:'rgba(40,40,40, 0.9)',
+              '&:hover': {
+                  backgroundColor:  'rgba(89,70,48, 0.6)',
+                  color: 'white' 
+                  }
             }}>
               Search</Button>
           </Stack>
@@ -196,14 +214,22 @@ export default function Home() {
         variant="contained"
         onClick={handleOpenAdd}
         sx={{
-          backgroundColor: 'rgba(193,177,160, 0.5)' 
+          backgroundColor: 'rgba(193,177,160, 0.5)',
+          '&:hover': {
+                  backgroundColor:  'rgba(89,70,48, 0.6)',
+                  color: 'white' 
+                  }
         }}
         >Add </Button>
         <Button 
         variant="contained"
         onClick={handleOpenSearch}
         sx={{
-          backgroundColor: 'rgba(193,177,160, 0.5)' 
+          backgroundColor: 'rgba(193,177,160, 0.5)',
+          '&:hover': {
+                  backgroundColor:  'rgba(89,70,48, 0.6)',
+                  color: 'white' 
+                  }
         }}
         >Search </Button>
       </Stack>
@@ -274,6 +300,9 @@ export default function Home() {
                 </Typography> 
                 <IconButton aria-label="add" onClick={() => addItem(name)}>
                 <AddIcon fontSize="large"/>
+                </IconButton>
+                <IconButton aria-label="delete" onClick={() => reduceItem(name)}>
+                <RemoveIcon fontSize="large"/>
                 </IconButton>
                 <IconButton aria-label="delete" onClick={() => removeItem(name)}>
                 <DeleteIcon fontSize="large"/>
