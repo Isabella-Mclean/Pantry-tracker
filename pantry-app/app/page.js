@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import backgroundImage from './background.jpg'
 import '@fontsource-variable/quicksand';
 import { Remove } from "@mui/icons-material";
+import { getRecipe } from "@/utils/api";
 
 const style = {
   position: 'absolute',
@@ -26,17 +27,38 @@ const style = {
   borderRadius:5,
 };
 
+const recipeStyle = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 700,
+  height: 500,
+  display: 'flex',
+  flexDirection:'column',
+  overflow:'scroll',
+  borderRadius:5,
+  gap:3,
+  boxShadow: 24,
+  bgcolor:'white',
+  alignItems: 'center'
+}
+
 export default function Home() {
   const [pantry, setPantry] = useState([])
   const [alert, setAlert] = useState(null);
 
   const [openAdd, setOpenAdd] = useState(false);
   const [openSearch, setOpenSearch] = useState(false);
+  const [openRecipe, setOpenRecipe] = useState(false);
   const handleOpenAdd = () => setOpenAdd(true);
   const handleCloseAdd = () => setOpenAdd(false);
   
   const handleOpenSearch = () => setOpenSearch(true);
   const handleCloseSearch = () => setOpenSearch(false);
+
+  const handleOpenRecipe = () => setOpenRecipe(true);
+  const handleCloseRecipe = () => setOpenRecipe(false);
 
   const [itemName, setItemName] = useState('')
 
@@ -104,6 +126,17 @@ export default function Home() {
       } 
     }
     await updatePantry()
+  }
+
+  const generateRecipe = async()=> {
+    {/** 
+    try {
+      const content = await getRecipe('Generate a recipe based on pantry items');
+      // Update the state or UI to display the recipe content
+    } catch (error) {
+      console.error('Error fetching recipe:', error);
+    }*/}
+      console.log("Hard-coded since the api doesn't work");
   }
 
 
@@ -199,6 +232,110 @@ export default function Home() {
         </Box>
       </Modal>
 
+      <Modal
+        open={openRecipe}
+        onClose={handleCloseRecipe}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+        >
+        <Box
+          sx={recipeStyle}
+        >
+          <Typography id="modal-modal-title" variant="h6" component="h2" fontFamily={'Quicksand Variable'}>
+            Generate a recipe
+          </Typography>
+          <Stack 
+          width="85%" 
+          direction={'column'} 
+          spacing={2} 
+          height="85%" 
+          display = {'flex'}
+          alignItems = {'center'}
+          justifyContent = {'center'}>
+            <Button 
+            variant="contained" 
+            onClick={() => {
+              generateRecipe()
+              handleCloseRecipe()
+            }}
+            sx={{
+              backgroundColor: 'rgba(193,177,160, 0.5)',
+              color:'rgba(40,40,40, 0.9)',
+              '&:hover': {
+                  backgroundColor:  'rgba(89,70,48, 0.6)',
+                  color: 'white' 
+                  },
+              width: '80%',
+            }}>
+              Generate</Button>
+            <Box
+            width="90%"
+            height="100%"
+            flexDirection={"column"}
+            bgcolor={'#f0f0f0'}
+            borderRadius="16px"
+            overflow={"auto"}
+            >
+            <Typography
+            width="100%"
+            display={'block'}
+            bgcolor={'#f0f0f0'}
+            paddingX={2}
+            whiteSpace={'preserve-breaks'}
+            >
+               {`Chicken and Vegetable Stir-Fry with Soy Sauce Glaze
+
+                Servings: 4-6 people
+
+                Ingredients:
+                1 lb boneless, skinless chicken breast or thighs, cut into bite-sized pieces
+
+                2 medium potatoes, peeled and diced
+
+                2 medium carrots, peeled and sliced
+
+                2 cups broccoli florets
+
+                1/4 cup soy sauce
+
+                2 tbsp vegetable oil
+
+                2 cloves garlic, minced
+
+                1 tsp grated ginger
+
+                Salt and pepper to taste
+
+                Optional: sesame seeds, green onions for garnish
+
+                Instructions:
+                Cook the potatoes and carrots: Boil or steam them until tender, about 10-12 minutes. Drain and set aside.
+
+                Prepare the chicken and broccoli: In a large skillet or wok, heat 1 tbsp of vegetable oil over medium-high heat. Add the chicken and cook until browned and cooked through, about 5-6 minutes. Remove the chicken from the skillet and set aside. Add the remaining 1 tbsp of vegetable oil and cook the broccoli florets until tender, about 3-4 minutes.
+
+                Make the soy sauce glaze: In a small bowl, whisk together the soy sauce, garlic, and ginger. Brush the glaze over the cooked chicken and broccoli.
+
+                Combine everything: In a large skillet or wok, combine the cooked potatoes, carrots, chicken, and broccoli. Pour in the remaining soy sauce glaze and stir to combine.
+
+                Serve: Serve hot, garnished with sesame seeds and green onions if desired.
+
+
+                Variations:
+
+                Add some crunch by tossing in some chopped bell peppers or snow peas.
+
+                Spice it up with some red pepper flakes or sriracha.
+
+                Serve over rice or noodles for a more substantial meal.
+                
+
+                I hope you enjoy this recipe!`}
+            </Typography>
+            </Box>
+          </Stack>
+        </Box>
+      </Modal>
+
       {alert && (
         <Alert
           severity={alert.severity}
@@ -232,6 +369,17 @@ export default function Home() {
                   }
         }}
         >Search </Button>
+        <Button 
+        variant="contained"
+        onClick={handleOpenRecipe}
+        sx={{
+          backgroundColor: 'rgba(193,177,160, 0.5)',
+          '&:hover': {
+                  backgroundColor:  'rgba(89,70,48, 0.6)',
+                  color: 'white' 
+                  }
+        }}
+        >Generate recipe </Button>
       </Stack>
       
       <Box>
