@@ -130,18 +130,38 @@ export default function Home() {
   }
 
   const generateRecipe = async()=> {
-    setRecipe('Loading...')
+    setRecipe('')
     //Converting the items in the pantry to a comma separated list for the ai to generate a recipe from
     const items = pantry.map(item=>item.name).join(',')
-    const response = await fetch('/api/generateRecipe', {
+    const response = fetch('/api/generateRecipe', {
       method:'POST',
       headers:{
         'Content-Type':'application/json',
       },
       body:JSON.stringify([{role:'user',content:items}]),
+    }).then(async (res)=>{
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let result = ''
+      return reader.read().then(function processText({done,value}) {
+        if (done){
+          return result
+        }
+        const text = decoder.decode(value || new Uint8Array(), {stream: true});
+        result += text;
+
+        // Update the state with the new text
+        setRecipe(prev => prev + text);
+
+        // Continue reading the next chunk
+        return reader.read().then(processText);
+
+        
+      })
+      
     })
-    const data = await response.json()
-    setRecipe(data.message)
+    //const data = await response.json()
+    //setRecipe(data.message)
     
   }
 
