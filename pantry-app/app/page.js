@@ -1,5 +1,5 @@
 'use client'
-import { Box, Stack, Typography, Button, Modal, stepLabelClasses, TextField, IconButton, Alert } from "@mui/material";
+import { Box, Stack, Typography, Button, Modal, stepLabelClasses, TextField, IconButton, Alert, listItemSecondaryActionClasses } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
@@ -8,8 +8,7 @@ import { collection, doc, query,getDocs, setDoc, deleteDoc, getDoc } from "fireb
 import { useEffect, useState } from "react";
 import backgroundImage from './background.jpg'
 import '@fontsource-variable/quicksand';
-import { Remove } from "@mui/icons-material";
-import { getRecipe } from "@/utils/api";
+import { FormatIndentDecrease, Remove } from "@mui/icons-material";
 
 const style = {
   position: 'absolute',
@@ -61,6 +60,8 @@ export default function Home() {
   const handleCloseRecipe = () => setOpenRecipe(false);
 
   const [itemName, setItemName] = useState('')
+  const [recipe, setRecipe] = useState('')
+  
 
   const updatePantry = async()=>{
     const snapshot = query(collection(firestore,'pantry'))
@@ -129,16 +130,40 @@ export default function Home() {
   }
 
   const generateRecipe = async()=> {
-    {/** 
-    try {
-      const content = await getRecipe('Generate a recipe based on pantry items');
-      // Update the state or UI to display the recipe content
-    } catch (error) {
-      console.error('Error fetching recipe:', error);
-    }*/}
-      console.log("Hard-coded since the api doesn't work");
-  }
+    setRecipe('')
+    //Converting the items in the pantry to a comma separated list for the ai to generate a recipe from
+    const items = pantry.map(item=>item.name).join(',')
+    const response = fetch('/api/generateRecipe', {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+      },
+      body:JSON.stringify([{role:'user',content:items}]),
+    }).then(async (res)=>{
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let result = ''
+      return reader.read().then(function processText({done,value}) {
+        if (done){
+          return result
+        }
+        const text = decoder.decode(value || new Uint8Array(), {stream: true});
+        result += text;
 
+        // Update the state with the new text
+        setRecipe(prev => prev + text);
+
+        // Continue reading the next chunk
+        return reader.read().then(processText);
+
+        
+      })
+      
+    })
+    //const data = await response.json()
+    //setRecipe(data.message)
+    
+  }
 
   return (
     <Box 
@@ -256,7 +281,6 @@ export default function Home() {
             variant="contained" 
             onClick={() => {
               generateRecipe()
-              handleCloseRecipe()
             }}
             sx={{
               backgroundColor: 'rgba(193,177,160, 0.5)',
@@ -283,53 +307,7 @@ export default function Home() {
             paddingX={2}
             whiteSpace={'preserve-breaks'}
             >
-               {`Chicken and Vegetable Stir-Fry with Soy Sauce Glaze
-
-                Servings: 4-6 people
-
-                Ingredients:
-                1 lb boneless, skinless chicken breast or thighs, cut into bite-sized pieces
-
-                2 medium potatoes, peeled and diced
-
-                2 medium carrots, peeled and sliced
-
-                2 cups broccoli florets
-
-                1/4 cup soy sauce
-
-                2 tbsp vegetable oil
-
-                2 cloves garlic, minced
-
-                1 tsp grated ginger
-
-                Salt and pepper to taste
-
-                Optional: sesame seeds, green onions for garnish
-
-                Instructions:
-                Cook the potatoes and carrots: Boil or steam them until tender, about 10-12 minutes. Drain and set aside.
-
-                Prepare the chicken and broccoli: In a large skillet or wok, heat 1 tbsp of vegetable oil over medium-high heat. Add the chicken and cook until browned and cooked through, about 5-6 minutes. Remove the chicken from the skillet and set aside. Add the remaining 1 tbsp of vegetable oil and cook the broccoli florets until tender, about 3-4 minutes.
-
-                Make the soy sauce glaze: In a small bowl, whisk together the soy sauce, garlic, and ginger. Brush the glaze over the cooked chicken and broccoli.
-
-                Combine everything: In a large skillet or wok, combine the cooked potatoes, carrots, chicken, and broccoli. Pour in the remaining soy sauce glaze and stir to combine.
-
-                Serve: Serve hot, garnished with sesame seeds and green onions if desired.
-
-
-                Variations:
-
-                Add some crunch by tossing in some chopped bell peppers or snow peas.
-
-                Spice it up with some red pepper flakes or sriracha.
-
-                Serve over rice or noodles for a more substantial meal.
-                
-
-                I hope you enjoy this recipe!`}
+               {recipe}
             </Typography>
             </Box>
           </Stack>

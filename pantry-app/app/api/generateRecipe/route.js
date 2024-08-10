@@ -1,29 +1,44 @@
-import { exec } from 'child_process';
-import path from 'path';
+import { NextResponse } from "next/server"
+import OpenAI from "openai";
 
 
-export const POST = async (req) => {
-  const { message } = await req.json();
-  const scriptPath = path.join(process.cwd(), 'generateRecipe.py');
+export async function POST(req){
+  const openai = new OpenAI();
+  const data = await req.json()
+  const systemPrompt = `
+    You are a helpful recipe generator, that can generate a recipe based on a provided list of items`
+  const completion = await openai.chat.completions.create({
+    messages:[{role:'system',content:systemPrompt},...data],
+    model:'gpt-4o-mini',
+    stream:true,
+  })
+  {/**return NextResponse.json(
+    {message: completion.choices[0].message.content},
+  {status:200},
+  )*/}
 
-  return new Promise((resolve) => {
-    exec(`python3 generateRecipe.py "${message}"`, (error, stdout, stderr) => {
-      if (error) {
-        resolve(new Response(JSON.stringify({ error: error.message }), { status: 500 }));
-      } else if (stderr) {
-        resolve(new Response(JSON.stringify({ error: stderr }), { status: 500 }));
-      } else {
-        try {
-          console.log(JSON.parse(stdout));
-          const output = JSON.parse(stdout); // Parse the JSON output from the Python script
-          resolve(new Response(JSON.stringify(output), { status: 200 }));
-        } catch (e) {
-          console.log('Invalid JSON output from Python script');
-          console.log(e);
-          resolve(new Response(JSON.stringify({ error: 'Invalid JSON output from Python script' }), { status: 500 }));
+  const stream = new ReadableStream({
+    async start(controller){
+        const encoder = new TextEncoder()
+        try{
+            for await (const chunk of completion){
+                const content = chunk.choices[0]?.delta?.content
+                if(content){
+                    const text = encoder.encode(content)
+                    controller.enqueue(text)
+                }
+            }
+        } catch (err) {
+            controller.error(err)
         }
-      }
-    });
-  });
-};
+        finally{
+            controller.close()
+        }
+    },
+})
+return new NextResponse(stream)
+
+
+
+}
 
