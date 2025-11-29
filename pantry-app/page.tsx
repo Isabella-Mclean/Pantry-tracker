@@ -1,4 +1,4 @@
-import { auth0 } from "@/lib/auth0";
+import { auth0 } from "@/auth0/auth0";
 import LoginButton from "@/components/LoginButton";
 import LogoutButton from "@/components/LogoutButton";
 import Profile from "@/components/Profile";
@@ -9,6 +9,7 @@ export default async function Home() {
 
   return (
     <div className="app-container">
+      {/*  
       <div className="main-card-wrapper">
         <img
           src="https://cdn.auth0.com/quantum-assets/dist/latest/logos/auth0/auth0-lockup-en-ondark.png"
@@ -33,7 +34,8 @@ export default async function Home() {
             </>
           )}
         </div>
-      </div>
+      </div>*/}
+      <p>Pantry Tracker App Coming Soon!</p>
     </div>
   );
 }
