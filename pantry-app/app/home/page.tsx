@@ -43,7 +43,7 @@ const recipeStyle = {
   alignItems: 'center'
 }
 
-export default function Home() {
+export default function Pantry() {
   const [pantry, setPantry] = useState([])
   const [alert, setAlert] = useState(null);
 
